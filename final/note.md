@@ -292,3 +292,164 @@ Nếu cô hỏi sâu vào toán chứng minh đạo hàm hàm loss (như chứng
 3. Tự tin vào phần Code bạn đã viết (hoặc hiểu) trong báo cáo.
 
 Chúc bạn bảo vệ thành công! Bạn nắm chắc mấy ý này là ăn điểm tuyệt đối phần kỹ thuật.
+
+Chào bạn, bộ code bạn gửi là một phiên bản "From Scratch" rất đầy đủ và chi tiết. Khi bảo vệ đồ án, các giảng viên (đặc biệt là dân kỹ thuật) rất thích nhìn vào code để hỏi xem **sinh viên có thực sự hiểu dòng code đó làm gì không** hay chỉ copy trên mạng.
+
+Dưới đây là các điểm "chết người" trong code của bạn mà cô giáo có thể hỏi xoáy, kèm theo cách trả lời để bạn thể hiện sự hiểu biết sâu sắc.
+
+---
+
+### 1. PHẦN DECISION TREE (CÂY QUYẾT ĐỊNH)
+
+Đây là nền tảng, cô sẽ hỏi kỹ nhất ở đây.
+
+**Dòng code cần chú ý:**
+
+```python
+gain = gini_goc - gini_con
+
+```
+
+**❓ Câu hỏi:** "Tại sao em lại lấy Gini gốc trừ Gini con? Ý nghĩa của dòng này là gì?"
+**✅ Trả lời:**
+"Dạ, đây là công thức tính **Information Gain (Độ lợi thông tin)**.
+
+* `gini_goc` là độ hỗn loạn dữ liệu hiện tại.
+* `gini_con` là độ hỗn loạn sau khi chia tách.
+* Phép trừ này cho biết việc chia tách giúp **giảm độ hỗn loạn bao nhiêu**. Mục tiêu của thuật toán là tìm điểm cắt sao cho sự giảm này (Gain) là lớn nhất ạ."
+
+**Dòng code cần chú ý:**
+
+```python
+if gain > best_gain: ... best_split = (cot, nguong)
+
+```
+
+**❓ Câu hỏi:** "Thuật toán này chạy chậm, em biết tại sao không? Độ phức tạp là bao nhiêu?"
+**✅ Trả lời:**
+"Dạ, vì đây là thuật toán **Greedy (Tham lam)**. Với mỗi node, nó phải duyệt qua **tất cả các cột (features)** và **tất cả các giá trị (thresholds)** có trong cột đó.
+Nếu dữ liệu lớn, độ phức tạp sẽ là  (với M là số mẫu, N là số đặc trưng). Đó là lý do Decision Tree tốn kém khi training nhưng rất nhanh khi predict ạ."
+
+---
+
+### 2. PHẦN LOGISTIC REGRESSION
+
+Phần này liên quan đến toán giải tích.
+
+**Dòng code cần chú ý:**
+
+```python
+return 1 / (1 + np.exp(-np.clip(z, -500, 500)))
+
+```
+
+**❓ Câu hỏi:** "Tại sao em phải dùng `np.clip(z, -500, 500)` trong hàm Sigmoid? Bỏ đi có được không?"
+**✅ Trả lời:**
+"Dạ không bỏ được ạ. Đây là kỹ thuật **Numerical Stability (Ổn định số học)**.
+Nếu  quá lớn hoặc quá nhỏ (ví dụ ), hàm `np.exp(-z)` sẽ trả về vô cực (Overflow) hoặc gây ra lỗi `NaN`. Em chặn giá trị trong khoảng [-500, 500] để đảm bảo tính toán an toàn mà không làm sai lệch kết quả ạ."
+
+**Dòng code cần chú ý:**
+
+```python
+dw = (1/len(X)) * np.dot(X.T, (y_pred - y_bin))
+
+```
+
+**❓ Câu hỏi:** "Dòng này là gì? Tại sao lại nhân `X.T` (ma trận chuyển vị)?"
+**✅ Trả lời:**
+"Dạ đây là bước tính **Gradient (Đạo hàm)** của hàm mất mát.
+
+* `y_pred - y_bin` là sai số dự đoán.
+* Em nhân với `X.T` là để thực hiện phép nhân ma trận tích vô hướng (dot product) giữa đặc trưng đầu vào và sai số, nhằm tìm ra hướng cần điều chỉnh cho trọng số . Đây là phiên bản **Vectorization** giúp code chạy nhanh hơn dùng vòng lặp ạ."
+
+---
+
+### 3. PHẦN XGBOOST (CUSTOM)
+
+Phần này code của bạn có một số "mẹo" (trick) để chạy được, cô rất dễ soi.
+
+**Dòng code cần chú ý:**
+
+```python
+residuals = y - F
+tree.fit(X, residuals)
+
+```
+
+**❓ Câu hỏi:** "Tại sao em lại fit cây vào `residuals` chứ không phải vào `y` (nhãn gốc)?"
+**✅ Trả lời:**
+"Dạ, đây là tư tưởng cốt lõi của Gradient Boosting. Thay vì học lại từ đầu, mô hình sau sẽ học **phần sai số (những gì chưa giải thích được)** của mô hình trước.
+`residuals` chính là Gradient âm của hàm loss (trong trường hợp dùng MSE). Việc fit vào residuals giúp mô hình giảm sai số dần dần qua từng bước ạ."
+
+**Dòng code cần chú ý (Rất quan trọng):**
+
+```python
+distances = np.abs(f - np.array([0, 1, 2]))
+probs = 1 / (distances + 0.1)
+
+```
+
+**❓ Câu hỏi:** "Hàm `predict_proba` này nhìn lạ quá, công thức này ở đâu ra? Sao không dùng Softmax?"
+**✅ Trả lời:**
+"Dạ cô rất tinh ý ạ. Vì em xây dựng XGBoost theo hướng **Hồi quy (Regression)** đơn giản hóa (coi nhãn 0, 1, 2 là số thực), nên đầu ra  là một số thực (ví dụ 1.8).
+Mô hình này không xuất ra Log-odds chuẩn để dùng Softmax, nên em đã tự xây dựng một **hàm Heuristic (cảm nghiệm)** dựa trên khoảng cách: Nếu giá trị dự đoán gần số 2 nhất (ví dụ 1.9) thì xác suất thuộc lớp 2 là cao nhất.
+Đây là cách em xử lý để tạo ra xác suất từ mô hình hồi quy 'from scratch' ạ."
+
+---
+
+### 4. PHẦN ADABOOST
+
+**Dòng code cần chú ý:**
+
+```python
+if error > 0.5:
+    error = 1 - error
+    p = -1
+
+```
+
+**❓ Câu hỏi:** "Tại sao khi lỗi (`error`) lớn hơn 0.5, em lại đảo ngược dự đoán (`p = -1`)?"
+**✅ Trả lời:**
+"Dạ, trong phân loại nhị phân, nếu một mô hình đoán sai nhiều hơn 50% (ví dụ sai 80%), thì chỉ cần **đảo ngược kết quả dự đoán** của nó lại, ta sẽ có một mô hình đúng 80%.
+Dòng code này giúp tận dụng cả những cây quyết định rất tệ (nhưng tệ một cách nhất quán) để đóng góp vào kết quả cuối cùng ạ."
+
+**Dòng code cần chú ý:**
+
+```python
+y_binary = np.where(y == cls, 1, -1)
+
+```
+
+**❓ Câu hỏi:** "Tại sao phải chuyển nhãn về 1 và -1? Để 0 và 1 được không?"
+**✅ Trả lời:**
+"Dạ bắt buộc phải là 1 và -1 ạ. Vì công thức cập nhật trọng số của AdaBoost là:
+
+Tích  sẽ dương nếu dự đoán đúng (cùng dấu) và âm nếu dự đoán sai (trái dấu). Nếu dùng 0, phép nhân này sẽ bị triệt tiêu và công thức không còn hoạt động đúng nữa ạ."
+
+---
+
+### 5. PHẦN RANDOM FOREST (BAGGING)
+
+**Dòng code cần chú ý:**
+
+```python
+idx = np.random.choice(n_mau, n_mau, replace=True)
+
+```
+
+**❓ Câu hỏi:** "Tham số `replace=True` nghĩa là gì? Tại sao cần nó?"
+**✅ Trả lời:**
+"Dạ `replace=True` nghĩa là lấy mẫu **có hoàn lại (Bootstrap)**. Tức là một mẫu có thể xuất hiện nhiều lần trong tập train của một cây con.
+Điều này giúp tạo ra sự khác biệt (Diversity) giữa các cây trong rừng. Nếu `replace=False` (lấy không hoàn lại) và lấy đủ `n_mau`, thì tất cả các cây sẽ học trên cùng một bộ dữ liệu y hệt nhau, dẫn đến các cây giống hệt nhau, làm mất tác dụng của Random Forest ạ."
+
+---
+
+### TỔNG KẾT CHIẾN THUẬT TRẢ LỜI
+
+Nếu cô hỏi vào code, bạn hãy:
+
+1. Nhìn thẳng vào dòng code cô chỉ.
+2. Giải thích **Input** (nó nhận cái gì) -> **Xử lý** (nó tính toán gì, công thức toán nào) -> **Output** (nó trả về cái gì).
+3. Nếu có chỗ nào code "hơi lạ" (như phần XGBoost proba), hãy thừa nhận đó là **cách xử lý kỹ thuật (trick) cho phiên bản from scratch**, đừng cố chứng minh nó là chân lý toán học (vì nó là bản đơn giản hóa).
+
+Bạn nắm chắc phần này thì bảo vệ 10 điểm kỹ thuật nhé!
