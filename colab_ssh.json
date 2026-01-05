@@ -1,0 +1,188 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# SSH Bruteforce Detection - RandomForest Training\n",
+    "Notebook này train model RandomForest trên dataset enriched với geo/ASN/timestamp."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# Install dependencies if not already\n",
+    "# !pip install pandas scikit-learn matplotlib seaborn"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from sklearn.ensemble import RandomForestClassifier\n",
+    "from sklearn.metrics import accuracy_score, f1_score, confusion_matrix, classification_report\n",
+    "import matplotlib.pyplot as plt\n",
+    "import seaborn as sns"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 1️⃣ Load enriched dataset"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "ENRICHED_CSV = '2025-10-18_enriched.csv'  # upload to Colab\n",
+    "df = pd.read_csv(ENRICHED_CSV)\n",
+    "print('Dataset shape:', df.shape)\n",
+    "df.head(5)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 2️⃣ Feature Engineering"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# Fail ratio feature\n",
+    "df['fail_ratio'] = df['fail_count'] / df['occ_count'].replace(0,1)\n",
+    "\n",
+    "# Log-transform to reduce skew\n",
+    "df['log_occ_count'] = np.log1p(df['occ_count'])\n",
+    "df['log_fail_count'] = np.log1p(df['fail_count'])\n",
+    "\n",
+    "# Encode categorical features (simple frequency encoding for 'country' and 'org')\n",
+    "for col in ['country','org']:\n",
+    "    freq = df[col].value_counts(normalize=True)\n",
+    "    df[col+'_freq'] = df[col].map(freq)\n",
+    "\n",
+    "# Select features for model\n",
+    "features = ['occ_count','fail_count','fail_ratio','log_occ_count','log_fail_count',\n",
+    "            'unique_ports','unique_usernames','country_freq','org_freq']\n",
+    "X = df[features]\n",
+    "y = df['classification']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 3️⃣ Train/Test Split"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "X_train, X_test, y_train, y_test = train_test_split(\n",
+    "    X, y, test_size=0.3, random_state=42, stratify=y\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 4️⃣ Train RandomForest Classifier"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "rf = RandomForestClassifier(n_estimators=200, max_depth=None, random_state=42)\n",
+    "rf.fit(X_train, y_train)\n",
+    "y_pred = rf.predict(X_test)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 5️⃣ Evaluation"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "acc = accuracy_score(y_test, y_pred)\n",
+    "f1 = f1_score(y_test, y_pred, average='weighted')\n",
+    "print(f'Accuracy: {acc:.4f}, F1 (weighted): {f1:.4f}')\n",
+    "print('\\nClassification Report:')\n",
+    "print(classification_report(y_test, y_pred))\n",
+    "\n",
+    "# Confusion matrix\n",
+    "cm = confusion_matrix(y_test, y_pred, labels=['other','suspicious','bruteforce'])\n",
+    "plt.figure(figsize=(6,5))\n",
+    "sns.heatmap(cm, annot=True, fmt='d', xticklabels=['other','suspicious','bruteforce'], \n",
+    "            yticklabels=['other','suspicious','bruteforce'], cmap='Blues')\n",
+    "plt.xlabel('Predicted')\n",
+    "plt.ylabel('True')\n",
+    "plt.title('Confusion Matrix')\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 6️⃣ Feature Importance"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "feat_imp = pd.Series(rf.feature_importances_, index=features).sort_values(ascending=False)\n",
+    "plt.figure(figsize=(8,4))\n",
+    "sns.barplot(x=feat_imp.values, y=feat_imp.index)\n",
+    "plt.title('Feature Importance')\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 7️⃣ Preview 30 lines of processed dataset + predictions"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "df_preview = df.copy()\n",
+    "df_preview['pred_class'] = rf.predict(X)\n",
+    "print('=== 30 dòng đầu của dataset processed với dự đoán ===')\n",
+    "df_preview.head(30)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "name": "python",
+   "version": "3.10"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
