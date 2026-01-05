@@ -453,3 +453,121 @@ Nếu cô hỏi vào code, bạn hãy:
 3. Nếu có chỗ nào code "hơi lạ" (như phần XGBoost proba), hãy thừa nhận đó là **cách xử lý kỹ thuật (trick) cho phiên bản from scratch**, đừng cố chứng minh nó là chân lý toán học (vì nó là bản đơn giản hóa).
 
 Bạn nắm chắc phần này thì bảo vệ 10 điểm kỹ thuật nhé!
+
+Đây là 10 câu hỏi mang tính chất **"Đặt vấn đề" (Problem-posing)** – tức là cô giáo sẽ không hỏi lý thuyết suông, mà sẽ xoáy vào sự mâu thuẫn, tính hợp lý hoặc điểm yếu trong cách làm của bạn.
+
+Đây là dạng câu hỏi khó nhất. Nếu bạn trả lời được những câu này, bạn sẽ nắm chắc điểm A.
+
+---
+
+### NHÓM 1: VỀ TÍNH HỢP LÝ CỦA ĐỀ TÀI (Tại sao làm cái này?)
+
+#### 🔥 Câu 1: "Bài toán Iris quá đơn giản, một cây Decision Tree bình thường đã đạt 96-98%. Tại sao em lại phải dùng Ensemble Learning phức tạp làm gì cho tốn tài nguyên?"
+
+* **Vấn đề cô đặt ra:** Em đang "dùng dao mổ trâu để giết gà".
+* **Cách trả lời:**
+* "Dạ thưa cô, đúng là với Iris thì Ensemble là không cần thiết về mặt hiệu năng.
+* Tuy nhiên, **mục tiêu của đồ án** không phải là đua top Accuracy trên Iris, mà là dùng một bộ dữ liệu chuẩn mực, dễ kiểm soát để **kiểm chứng thuật toán em tự viết (From Scratch)**.
+* Nếu em dùng dữ liệu quá phức tạp, khi model sai, em sẽ không biết do dữ liệu nhiễu hay do code em viết sai. Iris giúp em debug và minh chứng thuật toán hoạt động đúng đắn ạ."
+
+
+
+#### 🔥 Câu 2: "Em tự viết thuật toán (From Scratch) thì làm sao em chứng minh code của em chạy đúng? Nhỡ nó chạy ra kết quả cao là do may mắn (random) thì sao?"
+
+* **Vấn đề cô đặt ra:** Nghi ngờ tính chính xác của code thủ công.
+* **Cách trả lời:**
+* "Dạ, để kiểm chứng, em đã so sánh kết quả của code tự viết với thư viện chuẩn **Scikit-learn** trên cùng một tập dữ liệu và cùng tham số (như max_depth, n_estimators).
+* Kết quả cho thấy độ lệch Accuracy là không đáng kể. Ngoài ra, biểu đồ **Feature Importance** từ code của em cũng chỉ ra đúng các đặc trưng quan trọng (Cánh hoa) tương đồng với lý thuyết sinh học, chứng tỏ mô hình đã học đúng quy luật chứ không phải ngẫu nhiên ạ."
+
+
+
+---
+
+### NHÓM 2: VỀ KỸ THUẬT & THUẬT TOÁN (Xoáy vào code)
+
+#### 🔥 Câu 3: "Trong Gradient Boosting, em dùng cây Hồi quy (Regression Tree) để phân loại 3 lớp hoa. Về mặt toán học, làm sao em trừ nhãn 'Virginica' (2) cho nhãn 'Setosa' (0) được? Nó đâu có ý nghĩa đại số?"
+
+* **Vấn đề cô đặt ra:** Sai lầm về bản chất biến định danh (Categorical) và biến định lượng (Numerical).
+* **Cách trả lời:** (Thừa nhận giới hạn để ghi điểm thành thật)
+* "Dạ cô nhận xét rất đúng ạ. Về lý thuyết chuẩn, phải dùng hàm Loss **Multinomial Deviance** và One-hot encoding.
+* Tuy nhiên, trong phạm vi cài đặt thủ công đơn giản, em đã **xấp xỉ hóa** bài toán. Vì đặc thù hoa Iris có kích thước tăng dần (Setosa nhỏ nhất -> Virginica lớn nhất), nên việc gán nhãn 0, 1, 2 vô tình tạo ra một **quan hệ thứ tự**.
+* Mô hình hồi quy của em học cái 'thứ tự kích thước' đó. Đây là một cách tiếp cận đơn giản hóa (Heuristic) chấp nhận được cho đồ án môn học, dù không tối ưu cho mọi bài toán thực tế ạ."
+
+
+
+#### 🔥 Câu 4: "Mô hình Random Forest của em có dùng Bootstrap (lấy mẫu lặp lại). Nếu xui xẻo, một cây nào đó chỉ học toàn mẫu khó hoặc toàn mẫu nhiễu thì sao?"
+
+* **Vấn đề cô đặt ra:** Hiểu về sự ổn định của Bagging.
+* **Cách trả lời:**
+* "Dạ đó chính là lý do em cần số lượng cây lớn (n_estimators=20 hoặc 50).
+* Random Forest hoạt động theo nguyên lý **'Số lớn thắng số nhỏ'**. Có thể 1-2 cây bị nhiễu, nhưng hàng chục cây còn lại sẽ học đúng. Khi Voting (lấy số đông), những cây sai lệch đó sẽ bị triệt tiêu bởi đa số các cây đúng. Đó là lý do Bagging giảm được phương sai (Variance) ạ."
+
+
+
+#### 🔥 Câu 5: "Trong AdaBoost, nếu dữ liệu có Nhiễu (Outliers) - ví dụ một bông hoa bị đo sai kích thước cực lớn. Thuật toán sẽ xử lý thế nào? Có bị hỏng không?"
+
+* **Vấn đề cô đặt ra:** Điểm yếu chí mạng của AdaBoost.
+* **Cách trả lời:**
+* "Dạ đây là điểm yếu của AdaBoost ạ. Vì thuật toán tập trung vào các mẫu sai, nó sẽ dồn trọng số cực lớn vào điểm nhiễu đó và cố gắng học nó.
+* Hậu quả là model sẽ bị méo mó và **Overfitting**. Để khắc phục, em có thể giới hạn số vòng lặp (n_estimators nhỏ lại) hoặc tiền xử lý loại bỏ nhiễu trước khi train ạ."
+
+
+
+---
+
+### NHÓM 3: VỀ SO SÁNH & ĐÁNH GIÁ (Tại sao A tốt hơn B?)
+
+#### 🔥 Câu 6: "Tại sao kết quả Random Forest (Bagging) và Gradient Boosting (Boosting) của em lại xêm xêm nhau (đều ~93-96%)? Lý thuyết bảo Boosting thường tốt hơn mà?"
+
+* **Vấn đề cô đặt ra:** Sự chênh lệch giữa Lý thuyết và Thực tế.
+* **Cách trả lời:**
+* "Dạ Boosting thường tốt hơn khi mô hình cơ sở bị **Bias cao** (tức là model quá đơn giản, không học được dữ liệu).
+* Nhưng với Iris, dữ liệu quá dễ phân tách, nên một cây đơn lẻ (Decision Tree) trong Random Forest đã làm rất tốt rồi. Boosting cố gắng 'tối ưu thêm' trên một thứ đã gần hoàn hảo thì cũng không tăng được bao nhiêu, đôi khi còn bị bão hòa. Sự khác biệt sẽ rõ ràng hơn nếu em dùng dataset phức tạp hơn ạ."
+
+
+
+#### 🔥 Câu 7: "Trong Voting Classifier, nếu Logistic Regression đoán sai, KNN đoán sai, chỉ có Decision Tree đoán đúng. Vậy kết quả cuối cùng là Sai. Vậy Voting có tác dụng gì?"
+
+* **Vấn đề cô đặt ra:** Trường hợp "Chết chùm".
+* **Cách trả lời:**
+* "Dạ Voting chỉ hiệu quả khi các model thành phần có sự **Đa dạng (Diversity)** và lỗi của chúng **không tương quan** với nhau.
+* Tức là mẫu này Logistic sai thì KNN phải đúng, và ngược lại. Nếu cả 3 cùng sai trên 1 mẫu thì Voting bó tay. Đó là giới hạn của thuật toán. Tuy nhiên, xác suất cả 3 thuật toán (với 3 cơ chế toán học khác nhau) cùng sai thấp hơn nhiều so với việc 1 thuật toán sai ạ."
+
+
+
+---
+
+### NHÓM 4: CÂU HỎI VỀ TỐI ƯU & TRIỂN KHAI
+
+#### 🔥 Câu 8: "Em chọn Learning Rate = 0.1 cho Boosting. Nếu em tăng lên 1.0 thì sao? Giảm xuống 0.001 thì sao?"
+
+* **Vấn đề cô đặt ra:** Hiểu về siêu tham số (Hyperparameter).
+* **Cách trả lời:**
+* "Nếu **LR = 1.0**: Model học quá nhanh, dễ vọt qua điểm cực tiểu (Overshoot) -> Gây sai số lớn hoặc dao động không hội tụ.
+* Nếu **LR = 0.001**: Model học quá chậm, cần rất nhiều cây (n_estimators tăng cao) mới hội tụ được -> Tốn thời gian tính toán vô ích.
+* 0.1 là con số cân bằng thực nghiệm ạ."
+
+
+
+#### 🔥 Câu 9: "Code của em chạy mất bao lâu? Nếu áp dụng cho Big Data (triệu dòng) thì thuật toán nào trong số này chết trước?"
+
+* **Vấn đề cô đặt ra:** Độ phức tạp thuật toán và khả năng mở rộng (Scalability).
+* **Cách trả lời:**
+* "Dạ **KNN** sẽ chết trước ạ. Vì KNN là 'Học lười', lúc dự đoán nó phải tính khoảng cách tới cả triệu điểm dữ liệu -> Rất chậm.
+* Tiếp theo là **Boosting** vì nó phải chạy tuần tự (cây sau đợi cây trước).
+* **Random Forest** sẽ tốt nhất cho Big Data vì các cây chạy song song, có thể tận dụng đa luồng (Multi-threading) để tính toán nhanh ạ."
+
+
+
+#### 🔥 Câu 10: "Dự án này em thấy phần nào khó nhất? Em tự hào nhất điểm nào?"
+
+* **Vấn đề cô đặt ra:** Đánh giá năng lực cá nhân.
+* **Cách trả lời (Chốt hạ):**
+* "Dạ khó nhất là phần **Gradient Boosting From Scratch** ạ. Việc hiểu cách đạo hàm hàm Loss để ra Residuals và xây dựng cây để học Residuals đó (thay vì học nhãn) rất trừu tượng.
+* Em tự hào nhất là nhóm đã **không dùng thư viện core** mà vẫn xây dựng được hệ thống chạy ổn định, hiểu sâu sắc từng dòng code mình viết ra ạ."
+
+
+
+---
+
+**Mẹo nhỏ:** Khi trả lời, hãy giữ thái độ **khiêm tốn nhưng chắc chắn**. Nếu có điểm yếu (như dùng Regression cho Classification), hãy chủ động thừa nhận đó là "giới hạn của phạm vi đồ án" - thầy cô sẽ đánh giá rất cao sự trung thực khoa học này.
