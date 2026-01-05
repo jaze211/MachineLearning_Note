@@ -98,3 +98,197 @@ Khi dự đoán, mẫu dữ liệu sẽ được đưa qua cả 3 mô hình, mô
 * Luôn nhấn mạnh chữ **"FROM SCRATCH"**. Đây là tấm khiên bảo vệ bạn. Nếu mô hình chạy chậm hơn thư viện, hay thiếu tính năng nâng cao  *"Do em code from scratch để học thuật toán là chính"*.
 
 Chúc bạn báo cáo thành công rực rỡ! Bạn đã chuẩn bị rất kỹ rồi, tự tin lên nhé! 💪
+
+
+❓ 12. Boosting là gì?
+✅ Trả lời:
+
+Boosting là phương pháp:
+
+Huấn luyện các mô hình tuần tự, mô hình sau tập trung vào các mẫu mà mô hình trước dự đoán sai
+
+📌 Ví dụ:
+
+Mô hình 1 sai mẫu A
+
+Mô hình 2 học kỹ hơn mẫu A
+
+Mô hình 3 tiếp tục cải thiện
+
+❓ 13. Tại sao Boosting KHÔNG hiệu quả lắm với IRIS?
+✅ Trả lời RẤT QUAN TRỌNG:
+
+Boosting không phát huy hết sức mạnh với IRIS vì:
+
+🔹 1. IRIS quá đơn giản
+
+Dữ liệu nhỏ
+
+Ít nhiễu
+
+Các lớp phân tách rõ
+
+👉 Boosting phù hợp với bài toán khó, dữ liệu phức tạp
+
+🔹 2. Ít mẫu bị phân loại sai
+
+Boosting mạnh khi:
+
+Có nhiều mẫu khó
+
+Cần sửa lỗi dần dần
+
+👉 IRIS gần như đã được phân loại tốt ngay từ đầu
+
+🔹 3. Dễ overfitting
+
+Boosting tập trung quá mức vào vài điểm khó
+
+Với dataset nhỏ → dễ học “quá kỹ”
+
+❓ 14. Vậy tại sao vẫn thử Boosting trong đề tài?
+✅ Trả lời:
+
+Mục đích là:
+✔ So sánh các phương pháp ensemble
+✔ Chứng minh rằng không phải ensemble nào cũng tốt hơn
+✔ Rút ra kết luận phù hợp với đặc điểm dữ liệu
+
+Boosting khác gì với Bagging (Random Forest)?
+
+Trả lời:
+
+Bagging (Random Forest): Các cây chạy song song và độc lập, mục tiêu là giảm phương sai (Variance).
+
+Boosting: Các cây chạy tuần tự. Cây sau cố gắng sửa lỗi của cây trước, mục tiêu là giảm độ lệch (Bias) và sai số.
+
+cả hai đều dùng cây
+
+nhma hai cách dùng khác nhau nhé
+
+Hard Voting và Soft Voting khác nhau thế nào? Em dùng loại nào?
+
+Trả lời:
+
+Hard Voting: Dựa trên số phiếu bầu của nhãn (Ví dụ: 2 mô hình bầu hoa A, 1 mô hình bầu hoa B => Chọn A).
+
+Soft Voting: Dựa trên trung bình xác suất (Cần các model phải trả về xác suất).
+
+mình dùng Hard voting nhá
+Tại sao chọn Gini Index mà không phải Entropy cho Decision Tree? do entropy có hàm log2 nên chi phí tính toán sẽ lớn hơn gini nên mình chọn gini nhé
+Tại sao chọn 3 thuật toán cho voting ?
+
+nguyên tắc của Voting là Sự đa dạng (Diversity). Nếu em chọn 3 chuyên gia giống hệt nhau thì không có tác dụng gì cả. Em chọn 3 thuật toán này vì chúng bù trừ cho nhau như kiềng 3 chân:
+
+Logistic Regression nhìn dữ liệu theo đường thẳng (Tuyến tính).
+
+KNN nhìn dữ liệu theo khoảng cách (Phi tuyến tính cục bộ).
+
+Decision Tree nhìn dữ liệu theo các luật lệ (Luật If-Else).
+
+Kết quả: Khi Logistic bị sót một mẫu dữ liệu cong, KNN sẽ phát hiện ra nhờ khoảng cách. Khi KNN bị nhiễu bởi điểm ngoại lai, Decision Tree sẽ dùng luật để lọc bớt. Sự kết hợp của 3 góc nhìn khác biệt này giúp Voting Classifier đạt được độ ổn định cao nhất ạ."
+tại sao ko chọn svm mà chọn knn, do code tay svm khó vcl, còn knn dể hơn nhé
+
+Chào bạn, dựa trên nội dung báo cáo rất chi tiết mà bạn cung cấp (đặc biệt là phần thuật toán và code giả), cô giáo sẽ xoáy sâu vào **bản chất toán học** và **logic cài đặt**. Vì bạn chọn cách làm "From Scratch" (tự code), cô sẽ hỏi để kiểm tra xem bạn có thực sự hiểu dòng code đó đang làm gì hay chỉ chép công thức.
+
+Dưới đây là **bộ câu hỏi "sát sườn" nhất** đi kèm với cách trả lời thông minh, thể hiện bạn làm chủ kiến thức:
+
+---
+
+### PHẦN 1: HỎI VỀ ADABOOST
+
+#### ❓ Câu 1: "Tại sao em lại dùng Decision Stump (cây độ sâu = 1) mà không dùng cây sâu hơn? Cây nông thế sao học được?"
+
+* **Gợi ý trả lời:**
+* "Thưa cô, bản chất của Boosting là kết hợp nhiều **'người học yếu' (Weak Learners)** để thành một mô hình mạnh.
+* Nếu em dùng cây quá sâu (Strong Learner) ngay từ đầu, mô hình sẽ bị **Overfitting** (học vẹt) rất nhanh và không còn chỗ cho các cây sau sửa sai nữa.
+* Decision Stump tuy đơn giản (chỉ cắt 1 nhát) nhưng đảm bảo độ lệch (bias) cao, và qua hàng trăm vòng lặp, các cây sau sẽ bù đắp dần dần để tạo ra đường phân loại phức tạp ạ."
+
+
+
+#### ❓ Câu 2: "Trong công thức cập nhật trọng số, tại sao lại nhân với  hoặc ?"
+
+* **Gợi ý trả lời:** (Câu này hỏi về toán)
+* "Dạ, đây là cơ chế cốt lõi của AdaBoost ạ.
+* Khi mẫu bị **sai**, em nhân với  (số lớn hơn 1) -> Trọng số mẫu đó **tăng lên**. Cây tiếp theo buộc phải chú ý đến nó.
+* Khi mẫu **đúng**, em nhân với  (số nhỏ hơn 1) -> Trọng số **giảm đi**.
+* Hàm mũ (exponential) được chọn vì nó phạt lỗi sai rất nặng (tăng trọng số cực nhanh), giúp thuật toán hội tụ nhanh chóng ạ."
+
+
+
+#### ❓ Câu 3: "Em nói dùng One-vs-Rest cho AdaBoost, cụ thể là làm thế nào với Iris 3 lớp?"
+
+* **Gợi ý trả lời:**
+* "Vì AdaBoost gốc chỉ phân loại nhị phân (-1 và 1), nên với Iris 3 lớp, em xây dựng **3 mô hình AdaBoost độc lập**:
+1. Mô hình 1: Setosa vs (Versicolor + Virginica).
+2. Mô hình 2: Versicolor vs (Setosa + Virginica).
+3. Mô hình 3: Virginica vs (Setosa + Versicolor).
+
+
+* Khi dự đoán, em đưa mẫu vào cả 3 mô hình, mô hình nào tự tin nhất (tổng điểm  cao nhất) thì em chọn lớp đó ạ."
+
+
+
+---
+
+### PHẦN 2: HỎI VỀ GRADIENT BOOSTING (Phần khó nhất)
+
+#### ❓ Câu 4: "Tại sao trong code Gradient Boosting, em lại dùng 'DecisionTreeRegressor' (Cây hồi quy) cho bài toán phân loại hoa?"
+
+* **Gợi ý trả lời:** (Đây là câu hỏi "bẫy", trả lời sai là mất điểm)
+* "Thưa cô, đây là điểm hay nhất của Gradient Boosting ạ.
+* Các cây con trong Gradient Boosting **KHÔNG dự đoán nhãn hoa** (như Lan, Cúc...).
+* Nó dự đoán **Phần dư (Residuals/Gradients)** - tức là một giá trị số thực biểu thị mức độ sai số.
+* Vì Residual là số liên tục, nên bắt buộc phải dùng **Cây Hồi Quy** để học nó. Sau đó em cộng giá trị số thực này vào tổng điểm (log-odds) để cập nhật xác suất ạ."
+
+
+
+#### ❓ Câu 5: "Gradient là gì trong bài toán này? Tại sao công thức lại là `y_onehot - probs`?"
+
+* **Gợi ý trả lời:**
+* "Dạ, Gradient ở đây chính là **đạo hàm của hàm mất mát** (Cross-Entropy Loss).
+* Khi đạo hàm hàm loss này theo mô hình dự đoán, kết quả thu được chính xác là `y_thực_tế - xác_suất_dự_đoán`.
+* Ví dụ: Mẫu là Setosa (), mô hình đoán xác suất là . Thì Gradient (hay Residual) cần học là . Cây sau sẽ cố gắng bù đắp con số  này."
+
+
+
+#### ❓ Câu 6: "Tại sao trong vòng lặp Boosting, em phải xây dựng tận 3 cây (k=3)?"
+
+* **Gợi ý trả lời:**
+* "Dạ vì em dùng hàm kích hoạt **Softmax** cho đa lớp.
+* Hàm Softmax yêu cầu mỗi lớp phải có một điểm số (score) riêng để tính xác suất.
+* Do đó, ở mỗi vòng lặp, em cần:
+* Cây 1: Học sai số của lớp Setosa.
+* Cây 2: Học sai số của lớp Versicolor.
+* Cây 3: Học sai số của lớp Virginica.
+
+
+* Điều này khác với AdaBoost One-vs-Rest là chạy tách biệt, còn ở đây 3 cây này cùng tối ưu hóa hàm loss chung Cross-Entropy ạ."
+
+
+
+#### ❓ Câu 7: "Learning rate () trong công thức  có tác dụng gì? Cho bằng 1 được không?"
+
+* **Gợi ý trả lời:**
+* "Dạ không nên cho bằng 1 ạ. Learning rate (thường là 0.1 hoặc 0.01) đóng vai trò là bước nhảy (Shrinkage).
+* Nếu cho , mô hình sẽ học quá nhanh, dễ bị vọt lố qua điểm tối ưu và gây ra Overfitting ngay lập tức.
+* Em chọn  nhỏ để mô hình học chậm mà chắc, mỗi cây chỉ sửa một chút sai sót thôi, giúp tổng thể mô hình mượt mà và tổng quát hóa tốt hơn."
+
+
+
+---
+
+### PHẦN 3: CÁCH ỨNG PHÓ KHI GẶP CÂU HỎI QUÁ KHÓ
+
+Nếu cô hỏi sâu vào toán chứng minh đạo hàm hàm loss (như chứng minh tại sao đạo hàm Cross-Entropy lại ra `y - p`), và bạn bị bí:
+
+* **Chiến thuật:** Lái về Code "From Scratch".
+* **Trả lời:** "Dạ thưa cô, về phần chứng minh toán học chi tiết đạo hàm từng bước thì em xin phép tìm hiểu thêm để trả lời chính xác nhất. Tuy nhiên, trong quá trình cài đặt thực nghiệm (Implementation), em nhận thấy rằng việc sử dụng hiệu số `y_onehot - probs` (như trong đoạn code `residuals = ...` em trình bày) giúp mô hình hội tụ rất tốt và Loss giảm đều đặn sau các vòng lặp, chứng tỏ hướng Gradient này là chính xác với lý thuyết tối ưu hóa ạ."
+
+**Tóm lại:**
+
+1. AdaBoost = Thay đổi trọng số + Cây nông.
+2. Gradient Boosting = Học vào sai số (Residuals) + Cây hồi quy + Softmax.
+3. Tự tin vào phần Code bạn đã viết (hoặc hiểu) trong báo cáo.
+
+Chúc bạn bảo vệ thành công! Bạn nắm chắc mấy ý này là ăn điểm tuyệt đối phần kỹ thuật.
